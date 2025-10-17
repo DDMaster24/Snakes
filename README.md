@@ -1,8 +1,8 @@
 # 🐍 Snakes IO Game
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/YOUR_USERNAME/snakes-io-game/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)](https://github.com/YOUR_USERNAME/snakes-io-game/releases)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/DDMaster24/snakes-io-game/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)](https://github.com/DDMaster24/snakes-io-game/releases)
 
 A modern, Snake.io-inspired game built with Electron and JavaScript. Control your snake with your mouse or keyboard, eat particles to grow massive, and compete against intelligent AI opponents!
 
@@ -13,7 +13,7 @@ A modern, Snake.io-inspired game built with Electron and JavaScript. Control you
 ## 🎮 Play Now
 
 ### 💾 Download for Windows
-**[⬇️ Download Installer (v1.0.0)](https://github.com/YOUR_USERNAME/snakes-io-game/releases/latest/download/Snakes-IO-Game-Setup-1.0.0.exe)**
+**[⬇️ Download Installer (v1.0.0)](https://github.com/DDMaster24/snakes-io-game/releases/latest/download/Snakes-IO-Game-Setup-1.0.0.exe)**
 
 *Installer size: ~71 MB*
 
@@ -91,7 +91,7 @@ Grow your snake as large as possible by eating particles and smaller snakes whil
 
 ### Windows Installer (Recommended)
 
-1. **Download** the installer from [Releases](https://github.com/YOUR_USERNAME/snakes-io-game/releases/latest)
+1. **Download** the installer from [Releases](https://github.com/DDMaster24/snakes-io-game/releases/latest)
 2. **Run** `Snakes IO Game Setup 1.0.0.exe`
 3. If you see **"Windows protected your PC"**:
    - Click **"More info"**
@@ -232,7 +232,7 @@ snakes-io-game/
 - Default Electron icon (custom icon requires .ico file)
 - Web version requires modern browser (Chrome, Firefox, Edge)
 
-**Found a bug?** [Open an issue](https://github.com/YOUR_USERNAME/snakes-io-game/issues)
+**Found a bug?** [Open an issue](https://github.com/DDMaster24/snakes-io-game/issues)
 
 ---
 
@@ -264,8 +264,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/snakes-io-game/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/snakes-io-game/discussions)
+- **Issues**: [GitHub Issues](https://github.com/DDMaster24/snakes-io-game/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/DDMaster24/snakes-io-game/discussions)
 
 ---
 
