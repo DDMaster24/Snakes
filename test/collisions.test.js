@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { Snake } = require('../src/shared/snake.js');
 const { Particle } = require('../src/shared/particle.js');
 const { eatParticles, resolveSnakeCollisions, hitsWorldEdge, hitsSelf } = require('../src/shared/collisions.js');
+const { Vector2 } = require('../src/shared/vector2.js');
 
 function snakeAt(id, x, y, mass) {
   const s = new Snake({ id, x, y, name: id, isBot: false });
@@ -59,4 +60,27 @@ test('hitsWorldEdge false in open space', () => {
 test('hitsSelf false for short snake', () => {
   const s = snakeAt('a', 2000, 2000, 100);
   assert.equal(hitsSelf(s), false);
+});
+
+test('hitsSelf true when head overlaps a far body segment', () => {
+  const s = snakeAt('a', 2000, 2000, 300);
+  while (s.body.length <= 21) s.body.push(new Vector2(2500, 2500));
+  s.body[15] = new Vector2(s.head.x, s.head.y); // segment far from head, on the head
+  assert.equal(hitsSelf(s), true);
+});
+
+test('head-to-head tie kills the first snake', () => {
+  const a = snakeAt('a', 500, 500, 100);
+  const b = snakeAt('b', 500, 500, 100);
+  resolveSnakeCollisions([a, b]);
+  assert.equal(a.isDead, true);
+  assert.equal(b.isDead, false);
+});
+
+test('head-to-head survivor gains mass', () => {
+  const big = snakeAt('big', 500, 500, 300);
+  const small = snakeAt('small', 500, 500, 100);
+  const before = big.mass;
+  resolveSnakeCollisions([big, small]);
+  assert.ok(big.mass > before, `survivor mass ${big.mass} should exceed ${before}`);
 });
