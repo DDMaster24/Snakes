@@ -48,7 +48,16 @@ test('toState returns serialisable snapshot', () => {
   const s = make();
   const st = s.toState();
   assert.equal(st.id, 'p1');
+  assert.equal(st.name, 'You');
+  assert.equal(st.color, '#00ff88');
+  assert.equal(typeof st.mass, 'number');
+  assert.equal(st.mass, 100);
   assert.equal(typeof st.radius, 'number');
+  assert.equal(typeof st.angle, 'number');
+  assert.equal(typeof st.boosting, 'boolean');
+  assert.equal(st.boosting, false);
+  assert.equal(typeof st.dead, 'boolean');
+  assert.equal(st.dead, false);
   assert.ok(Array.isArray(st.segments));
   assert.equal(typeof st.segments[0].x, 'number');
 });
