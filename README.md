@@ -29,28 +29,33 @@ A modern, Snake.io-inspired game built with Electron and JavaScript. Play real-t
 - **Keyboard Control**: Arrow keys or WASD for classic Snake gameplay
 - **Virtual Joystick**: Touch-friendly on-screen controls
 
-### 🤖 **Multiplayer & AI Opponents**
+### 🤖 **Multiplayer & Smart AI Opponents**
 - Play real-time multiplayer with friends on the same WiFi using room codes
-- 6 AI snakes with varying difficulty levels fill the world alongside human players
+- Server-authoritative simulation — fair collisions, one source of truth
+- 6 AI snakes with per-bot skill tiers fill the world alongside human players
+- Bots actively avoid walls, flee bigger snakes, and **lead** their prey (aim ahead of it)
+- Bots boost to chase or escape — but not into walls
 - Some start HUGE (300+ mass!) for immediate challenge
-- Smart pathfinding and self-preservation
-- AI avoids self-collision and hunts strategically
 
 ### 🎨 **Beautiful Graphics**
-- Glowing particle effects
-- Smooth animations at 60 FPS
-- Dynamic camera following your snake
+- Glowing particle effects and a boost glow
+- Smooth interpolated movement + camera that eases and **zooms out as you grow**
+- Live **minimap** showing every snake in the arena
+- On-screen **kill feed** of recent takedowns
 - Massive 4000x4000 playing field
 
-### ⚡ **Boost Ability**
-- Hold **SPACEBAR** for 1.8x speed boost
-- Perfect for escaping danger or catching prey
-- Screen flash effect when boosting
+### ⚡ **Boost with a cost**
+- Hold **SPACEBAR** for a 1.8x speed boost
+- Boosting **drains your mass** and drops a food trail — a real tactical tradeoff
+- Too small to boost below a minimum size
+
+### 🔊 **Sound**
+- Web Audio effects for eating, boosting, and death
 
 ### 📊 **Competitive Features**
 - Real-time leaderboard with rankings
 - Track your mass and length
-- Compete against AI for top position
+- Compete against friends and AI for the top spot
 
 ### 🌈 **Customization**
 - Choose from 7 vibrant snake colors
@@ -149,15 +154,27 @@ npm run build
 ```
 snakes-io-game/
 ├── src/
-│   ├── game.js          # Main game loop and logic
-│   ├── snake.js         # Snake class (player & AI)
-│   ├── particle.js      # Food particle system
-│   ├── camera.js        # Camera following system
-│   ├── utils.js         # Helper functions
-│   └── main.js          # Entry point
-├── index.html           # Game UI
-├── electron.js          # Electron wrapper
-├── server.js            # Web server
+│   ├── shared/          # Browser-free simulation (runs on server AND browser)
+│   │   ├── vector2.js   #   2D vector math
+│   │   ├── constants.js #   Gameplay/network constants
+│   │   ├── random.js    #   Random helpers + room-code generator
+│   │   ├── snake.js     #   Snake movement/growth/serialization
+│   │   ├── particle.js  #   Food particles
+│   │   ├── collisions.js#   Authoritative collision rules
+│   │   └── ai.js        #   Bot decision logic
+│   └── client/          # Browser-only presentation
+│       ├── net.js       #   WebSocket client + snapshot buffer
+│       ├── renderer.js  #   Interpolated rendering, camera, minimap
+│       ├── input.js     #   Mouse/keyboard/joystick input
+│       ├── audio.js     #   Sound effects
+│       └── main.js      #   Lobby UI + render loop wiring
+├── server/
+│   ├── GameRoom.js      # One authoritative game instance (30Hz tick)
+│   └── LobbyManager.js  # Rooms keyed by code
+├── server.js            # Express static host + WebSocket server + tick loop
+├── test/                # node:test unit + integration tests
+├── index.html           # Game UI (lobby, HUD, kill feed)
+├── electron.js          # Electron desktop wrapper (hosts the server)
 └── package.json         # Dependencies
 ```
 
@@ -198,10 +215,12 @@ snakes-io-game/
 
 ### AI Behavior
 - **Self-preservation**: Avoids own body automatically
-- **Threat detection**: Flees from larger snakes
-- **Hunting**: Aggressively chases smaller snakes
-- **Food seeking**: Targets nearby particle clusters
-- **Difficulty scaling**: Larger AI snakes start with more mass
+- **Wall avoidance**: Proactively steers back toward the center near edges
+- **Threat detection**: Flees from larger snakes (range scales with bot skill)
+- **Hunting with leading**: Aims *ahead* of smaller prey along their heading
+- **Boost**: Boosts to close on prey or escape — but never into a wall
+- **Skill tiers**: Each bot has its own reaction/aggression level
+- **Food seeking**: Targets nearby particle clusters when no threat/prey
 
 ### Collision Detection
 - **Head-to-head**: Smaller snake dies
