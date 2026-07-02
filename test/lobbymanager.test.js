@@ -34,3 +34,22 @@ test('gcEmptyRooms keeps rooms with a human', () => {
   lm.gcEmptyRooms();
   assert.equal(lm.getRoom(code), room);
 });
+
+test('room with only a dead human is collected after the grace period', () => {
+  const lm = new LobbyManager();
+  const { code, room } = lm.createRoom({ numBots: 0 });
+  const p = room.addPlayer('p1', 'You', '#00ff88');
+  p.isDead = true;
+  for (let i = 0; i < 30 * 30 + 5; i++) room.step(1 / 30);
+  lm.gcEmptyRooms();
+  assert.equal(lm.getRoom(code), null);
+});
+
+test('room with a live human is NOT collected', () => {
+  const lm = new LobbyManager();
+  const { code, room } = lm.createRoom({ numBots: 0 });
+  room.addPlayer('p1', 'You', '#00ff88'); // alive
+  for (let i = 0; i < 30 * 30 + 5; i++) room.step(1 / 30);
+  lm.gcEmptyRooms();
+  assert.equal(lm.getRoom(code), room);
+});

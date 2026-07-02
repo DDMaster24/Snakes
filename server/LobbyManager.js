@@ -1,5 +1,6 @@
 const { GameRoom } = require('./GameRoom.js');
 const { makeRoomCode } = require('../src/shared/random.js');
+const { CONSTANTS } = require('../src/shared/constants.js');
 
 class LobbyManager {
   constructor() { this.rooms = new Map(); } // code -> GameRoom
@@ -21,7 +22,9 @@ class LobbyManager {
 
   gcEmptyRooms() {
     for (const [code, room] of this.rooms) {
-      if (room.humanCount() === 0) this.rooms.delete(code);
+      if (room.humanCount() === 0 || room.emptyTicks > CONSTANTS.TICK_RATE * 30) {
+        this.rooms.delete(code);
+      }
     }
   }
 }

@@ -19,6 +19,7 @@ class GameRoom {
     this.particles = [];
     this._botSeq = 0;
     this._recentEvents = [];
+    this.emptyTicks = 0;
 
     for (let i = 0; i < CONSTANTS.START_PARTICLES; i++) this._spawnParticle();
     for (let i = 0; i < numBots; i++) this._spawnBot(i);
@@ -77,6 +78,12 @@ class GameRoom {
   humanCount() {
     let n = 0;
     for (const s of this.snakes.values()) if (!s.isBot) n++;
+    return n;
+  }
+
+  liveHumanCount() {
+    let n = 0;
+    for (const s of this.snakes.values()) if (!s.isBot && !s.isDead) n++;
     return n;
   }
 
@@ -153,6 +160,7 @@ class GameRoom {
       for (let i = 0; i < 10; i++) this._spawnParticle();
     }
 
+    this.emptyTicks = this.liveHumanCount() === 0 ? this.emptyTicks + 1 : 0;
     return { kills };
   }
 
