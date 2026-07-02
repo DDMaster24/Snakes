@@ -33,7 +33,8 @@ class Renderer {
         }
         return seg;
       });
-      const angle = this._lerp(p.angle, s.angle, alpha);
+      const da = ((s.angle - p.angle + Math.PI) % (Math.PI * 2)) - Math.PI;
+      const angle = p.angle + da * alpha;
       return { ...s, segments, angle };
     });
   }
@@ -122,6 +123,7 @@ class Renderer {
     // Name tag for everyone (helps tell players apart)
     ctx.fillStyle = 'white'; ctx.font = '14px Arial'; ctx.textAlign = 'center';
     ctx.fillText(s.name, hs.x, hs.y - radius - 15);
+    ctx.textAlign = 'left';
   }
 
   _drawBorders() {
