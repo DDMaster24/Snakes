@@ -56,6 +56,9 @@ class Renderer {
     // Camera follows our snake's head.
     const me = snakes.find((s) => s.id === this.followId) || snakes[0];
     if (me) {
+      // Zoom out gently as we grow so big snakes aren't claustrophobic.
+      const targetZoom = Math.max(0.55, Math.min(1, 14 / (me.radius || 10)));
+      this.zoom += (targetZoom - this.zoom) * 0.05;
       const head = me.segments[0];
       const targetX = head.x - this.canvas.width / (2 * this.zoom);
       const targetY = head.y - this.canvas.height / (2 * this.zoom);
