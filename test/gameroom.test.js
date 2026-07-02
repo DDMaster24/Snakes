@@ -68,3 +68,15 @@ test('particle count stays bounded under heavy scatter + boost', () => {
   }
   assert.ok(room.particles.length <= 1000, `particles ${room.particles.length} should stay <= MAX_PARTICLES`);
 });
+
+test('a bot near a wall does not boost even with a stale boost intent', () => {
+  const room = new GameRoom('ABCDE', { numBots: 0 });
+  const bot = room._spawnBot(0);
+  bot.body.forEach((seg) => { seg.x = 150; seg.y = 2000; }); // hug the left wall
+  bot.mass = 100;
+  bot._wantBoost = true;               // stale intent to boost
+  bot.targetPosition = { x: 0, y: 2000 };
+  bot.aiChangeTargetTimer = 0;         // prevent retarget this tick
+  room.step(1 / 30);
+  assert.equal(bot.isBoosting, false, 'bot should not boost while hugging a wall');
+});

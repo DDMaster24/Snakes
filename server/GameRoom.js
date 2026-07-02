@@ -98,7 +98,11 @@ class GameRoom {
       if (s.isBot) {
         const aim = computeAiAim(s, this.particles, all, dt);
         s.setAim(aim.x, aim.y);
-        s.setBoost(!!aim.boost && s.mass > CONSTANTS.BOOST_MIN_MASS);
+        // Never boost toward/near a wall — the boost decision is only recomputed
+        // on retarget, so without this a fleeing bot can boost straight into the edge.
+        const W = CONSTANTS.WORLD_SIZE;
+        const nearWall = s.head.x < 300 || s.head.x > W - 300 || s.head.y < 300 || s.head.y > W - 300;
+        s.setBoost(!!aim.boost && !nearWall && s.mass > CONSTANTS.BOOST_MIN_MASS);
       } else {
         const inp = this.inputs.get(s.id);
         if (inp) { s.setAim(inp.aimX, inp.aimY); s.setBoost(inp.boost); }

@@ -16,7 +16,12 @@ class Renderer {
     this.canvas.height = window.innerHeight;
   }
 
-  setFollowId(id) { this.followId = id; }
+  setFollowId(id) {
+    this.followId = id;
+    // Reset the camera so render() snaps to the new head instead of sliding
+    // across the map on (re)spawn — the Renderer is reused across games.
+    this.cam = { x: 0, y: 0 };
+  }
 
   _lerp(a, b, t) { return a + (b - a) * t; }
 
