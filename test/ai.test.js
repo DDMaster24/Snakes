@@ -35,3 +35,19 @@ test('flees a much bigger nearby snake', () => {
   // Threat is to +x, so bot should aim to -x (away)
   assert.ok(aim.x < 2000, `aim.x ${aim.x} should flee to -x`);
 });
+
+test('bot steers toward center when hugging a wall', () => {
+  const b = new Snake({ id: 'bot', x: 120, y: 2000, name: 'B', isBot: true });
+  b.aiChangeTargetTimer = 999;
+  const aim = computeAiAim(b, [], [b], 1 / 30);
+  assert.ok(aim.x > 120, 'should steer inward (+x) away from left wall');
+});
+
+test('bot leads a moving prey (aims ahead of it)', () => {
+  const b = new Snake({ id: 'bot', x: 2000, y: 2000, name: 'B', isBot: true }); b.mass = 300;
+  b.aiChangeTargetTimer = 999;
+  const prey = new Snake({ id: 'prey', x: 2300, y: 2000, name: 'P', isBot: true }); prey.mass = 50;
+  prey.currentAngle = 0; // moving +x
+  const aim = computeAiAim(b, [], [b, prey], 1 / 30);
+  assert.ok(aim.x >= 2300, 'aim should be at or ahead of prey along its heading');
+});

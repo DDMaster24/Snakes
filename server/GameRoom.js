@@ -90,6 +90,7 @@ class GameRoom {
       if (s.isBot) {
         const aim = computeAiAim(s, this.particles, all, dt);
         s.setAim(aim.x, aim.y);
+        s.setBoost(!!aim.boost && s.mass > CONSTANTS.BOOST_MIN_MASS);
       } else {
         const inp = this.inputs.get(s.id);
         if (inp) { s.setAim(inp.aimX, inp.aimY); s.setBoost(inp.boost); }
