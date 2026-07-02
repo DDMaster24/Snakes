@@ -8,13 +8,6 @@ const { randomRange, randomName } = require('../src/shared/random.js');
 const BOT_MASS = [300, 200, 150, 150];
 function botMass(i) { return BOT_MASS[i] !== undefined ? BOT_MASS[i] : 100; }
 
-function spawnPoint() {
-  return {
-    x: randomRange(200, CONSTANTS.WORLD_SIZE - 200),
-    y: randomRange(200, CONSTANTS.WORLD_SIZE - 200),
-  };
-}
-
 class GameRoom {
   constructor(code, { numBots = 6 } = {}) {
     this.code = code;
@@ -30,6 +23,24 @@ class GameRoom {
     for (let i = 0; i < numBots; i++) this._spawnBot(i);
   }
 
+  _findSafeSpawn() {
+    const pad = 300;
+    const heads = [...this.snakes.values()].filter((s) => !s.isDead).map((s) => s.head);
+    let best = null, bestDist = -1;
+    for (let i = 0; i < 30; i++) {
+      const x = randomRange(pad, CONSTANTS.WORLD_SIZE - pad);
+      const y = randomRange(pad, CONSTANTS.WORLD_SIZE - pad);
+      let nearest = Infinity;
+      for (const h of heads) {
+        const dx = h.x - x, dy = h.y - y;
+        nearest = Math.min(nearest, Math.sqrt(dx * dx + dy * dy));
+      }
+      if (nearest > bestDist) { bestDist = nearest; best = { x, y }; }
+      if (nearest >= 400) break; // good enough
+    }
+    return best || { x: CONSTANTS.WORLD_SIZE / 2, y: CONSTANTS.WORLD_SIZE / 2 };
+  }
+
   _spawnParticle() {
     const x = randomRange(50, CONSTANTS.WORLD_SIZE - 50);
     const y = randomRange(50, CONSTANTS.WORLD_SIZE - 50);
@@ -38,7 +49,7 @@ class GameRoom {
 
   _spawnBot(slot) {
     const id = `bot-${this._botSeq++}`;
-    const { x, y } = spawnPoint();
+    const { x, y } = this._findSafeSpawn();
     const s = new Snake({ id, x, y, name: randomName(), isBot: true });
     s.mass = botMass(slot);
     s._slot = slot;
@@ -47,7 +58,7 @@ class GameRoom {
   }
 
   addPlayer(id, name, color) {
-    const { x, y } = spawnPoint();
+    const { x, y } = this._findSafeSpawn();
     const s = new Snake({ id, x, y, name: name || 'Player', color, isBot: false });
     this.snakes.set(id, s);
     return s;
