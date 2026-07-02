@@ -5,6 +5,10 @@ const { WebSocketServer } = require('ws');
 const { LobbyManager } = require('./server/LobbyManager.js');
 const { CONSTANTS } = require('./src/shared/constants.js');
 
+function cleanName(n) {
+  return String(n == null ? 'Player' : n).replace(/[<>]/g, '').trim().slice(0, 16) || 'Player';
+}
+
 function createServer(port = process.env.PORT || 3000) {
   const app = express();
   app.use(express.static(__dirname));
@@ -38,7 +42,7 @@ function createServer(port = process.env.PORT || 3000) {
         }
         const { code, room } = lobbies.createRoom({ numBots: 6 });
         const id = `p${playerSeq++}`;
-        room.addPlayer(id, msg.name, msg.color);
+        room.addPlayer(id, cleanName(msg.name), msg.color);
         meta.set(ws, { roomCode: code, playerId: id });
         send(ws, { type: 'created', code, playerId: id });
         return;
@@ -53,7 +57,7 @@ function createServer(port = process.env.PORT || 3000) {
           if (oldRoom) oldRoom.removePlayer(m.playerId);
         }
         const id = `p${playerSeq++}`;
-        room.addPlayer(id, msg.name, msg.color);
+        room.addPlayer(id, cleanName(msg.name), msg.color);
         meta.set(ws, { roomCode: room.code, playerId: id });
         send(ws, { type: 'joined', code: room.code, playerId: id });
         return;
@@ -61,7 +65,9 @@ function createServer(port = process.env.PORT || 3000) {
 
       if (msg.type === 'input' && m.roomCode) {
         const room = lobbies.getRoom(m.roomCode);
-        if (room) room.setInput(m.playerId, msg.aimX, msg.aimY, msg.boost);
+        if (room && Number.isFinite(msg.aimX) && Number.isFinite(msg.aimY)) {
+          room.setInput(m.playerId, msg.aimX, msg.aimY, msg.boost);
+        }
         return;
       }
 

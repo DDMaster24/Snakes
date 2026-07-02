@@ -5,6 +5,8 @@
   "main": "electron.js",
   "scripts": {
     "start": "electron .",
+    "build": "electron-builder --win",
+    "build:all": "electron-builder --win --mac --linux",
     "web": "node server.js",
     "test": "node --test"
   },

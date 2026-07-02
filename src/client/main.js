@@ -118,7 +118,12 @@
       last.leaderboard.forEach((row, i) => {
         const el = document.createElement('div');
         el.className = 'leaderboard-entry' + (me && row.name === me.name ? ' player' : '');
-        el.innerHTML = `<span>${i + 1}. ${row.name}</span><span>${row.mass}</span>`;
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = `${i + 1}. ${row.name}`;
+        const massSpan = document.createElement('span');
+        massSpan.textContent = String(row.mass);
+        el.appendChild(nameSpan);
+        el.appendChild(massSpan);
         list.appendChild(el);
       });
     }
