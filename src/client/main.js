@@ -138,10 +138,25 @@
     if (gameOver) gameOver.style.display = 'none';
     net.join(net.code, playerName(), selectedColor);
   });
+
+  // Pause overlay. NOTE: this is multiplayer — the server keeps simulating while
+  // the overlay is open, so your snake keeps moving. This is just a menu escape hatch.
+  const pauseMenu = document.getElementById('pauseMenu');
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape' && running && pauseMenu) {
+      pauseMenu.style.display = (pauseMenu.style.display === 'block') ? 'none' : 'block';
+    }
+  });
+  const resumeBtn = document.getElementById('resumeBtn');
+  if (resumeBtn) resumeBtn.addEventListener('click', () => {
+    if (pauseMenu) pauseMenu.style.display = 'none';
+  });
+
   const toMenu = document.getElementById('mainMenuBtn');
   if (toMenu) toMenu.addEventListener('click', () => {
     running = false; net.leave();
     if (gameOver) gameOver.style.display = 'none';
+    if (pauseMenu) pauseMenu.style.display = 'none';
     menu.classList.remove('hidden');
   });
 })();
