@@ -325,7 +325,18 @@
                 <div class="color-option" data-color="#74b9ff" style="background: #74b9ff;"></div>
             </div>
 
-            <button id="startGameBtn">START GAME</button>
+            <div id="lobbyControls" style="margin-top:16px; display:flex; flex-direction:column; gap:10px; align-items:center;">
+              <input id="playerName" placeholder="Your name" maxlength="16"
+                     style="padding:10px 14px; border-radius:8px; border:1px solid #2a2f3a; background:#11151c; color:#e6f1ff; font-size:16px; text-align:center;" />
+              <button id="createLobbyBtn" class="control-btn">Create Lobby</button>
+              <div style="display:flex; gap:8px;">
+                <input id="joinCode" placeholder="CODE" maxlength="5"
+                       style="width:110px; text-transform:uppercase; padding:10px; border-radius:8px; border:1px solid #2a2f3a; background:#11151c; color:#e6f1ff; font-size:18px; letter-spacing:3px; text-align:center;" />
+                <button id="joinLobbyBtn" class="control-btn">Join</button>
+              </div>
+              <div id="lobbyMsg" style="min-height:20px; color:#ff6b6b; font-size:14px;"></div>
+            </div>
+            <div id="lobbyBanner" style="display:none; margin-top:10px; color:#00ff88; font-size:18px;"></div>
         </div>
 
         <div id="pauseMenu">
@@ -345,11 +356,14 @@
         </div>
     </div>
 
-    <script src="src/utils.js"></script>
-    <script src="src/particle.js"></script>
-    <script src="src/snake.js"></script>
-    <script src="src/camera.js"></script>
-    <script src="src/game.js"></script>
-    <script src="src/main.js"></script>
+    <!-- Shared simulation (also used by server) -->
+    <script src="src/shared/vector2.js"></script>
+    <script src="src/shared/constants.js"></script>
+    <script src="src/shared/random.js"></script>
+    <!-- Client -->
+    <script src="src/client/net.js"></script>
+    <script src="src/client/renderer.js"></script>
+    <script src="src/client/input.js"></script>
+    <script src="src/client/main.js"></script>
 </body>
 </html>
