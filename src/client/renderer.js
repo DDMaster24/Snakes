@@ -72,6 +72,36 @@ class Renderer {
     this._drawBorders();
     const meBoost = me && me.boosting;
     if (meBoost) { ctx.fillStyle = 'rgba(255,255,0,0.3)'; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); }
+    this._drawMinimap(snakes, me);
+  }
+
+  _drawMinimap(snakes, me) {
+    const ctx = this.ctx;
+    const W = 4000;
+    const size = 160;
+    const margin = 16;
+    const x0 = this.canvas.width - size - margin;
+    const y0 = this.canvas.height - size - margin;
+    const scale = size / W;
+
+    // Panel
+    ctx.fillStyle = 'rgba(10, 10, 21, 0.6)';
+    ctx.fillRect(x0, y0, size, size);
+    ctx.strokeStyle = 'rgba(255, 68, 68, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x0, y0, size, size);
+
+    // Snakes as dots
+    for (const s of snakes) {
+      const h = s.segments[0];
+      const mx = x0 + h.x * scale;
+      const my = y0 + h.y * scale;
+      const isMe = me && s.id === me.id;
+      ctx.fillStyle = isMe ? '#ffffff' : (s.color || '#888');
+      ctx.beginPath();
+      ctx.arc(mx, my, isMe ? 4 : 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   _drawGrid() {
