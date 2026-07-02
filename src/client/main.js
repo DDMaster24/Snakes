@@ -32,6 +32,10 @@
   });
 
   const net = new NetClient();
+  const sfx = new SoundFX();
+  let lastMass = 0;
+  let prevBoost = false;
+  let lastEatSound = 0;
   // Renderer and InputController are created only once to avoid stacking event listeners.
   // InputController binds listeners to document/canvas in its constructor with no cleanup,
   // so re-constructing on every respawn would leak listeners. We guard with null-checks here
@@ -51,7 +55,7 @@
   };
   net.onJoined = (m) => { startGame(m.playerId); };
   net.onState = () => { lastSnapAt = performance.now(); updateHUD(); };
-  net.onDead = (m) => showGameOver(m.by);
+  net.onDead = (m) => { sfx.death(); showGameOver(m.by); };
 
   async function ensureConnected() {
     if (net.ws && net.ws.readyState === WebSocket.OPEN) return;
@@ -61,10 +65,12 @@
 
   document.getElementById('createLobbyBtn').addEventListener('click', async () => {
     lobbyMsg.textContent = '';
+    sfx.resume();
     try { await ensureConnected(); net.create(playerName(), selectedColor); } catch {}
   });
   document.getElementById('joinLobbyBtn').addEventListener('click', async () => {
     lobbyMsg.textContent = '';
+    sfx.resume();
     const code = joinCode.value.trim().toUpperCase();
     if (code.length !== 5) { lobbyMsg.textContent = 'Enter a 5-letter code'; return; }
     try { await ensureConnected(); net.join(code, playerName(), selectedColor); } catch {}
@@ -75,6 +81,7 @@
     if (instructions) instructions.classList.add('hidden');
     if (gameOver) gameOver.style.display = 'none';
     canvas.classList.add('playing');
+    lastMass = 0; prevBoost = false;
 
     // Guard: create Renderer and InputController only once to prevent listener leaks.
     if (!renderer) renderer = new Renderer(canvas);
@@ -100,6 +107,8 @@
       if (input) {
         const aim = input.getAim(renderer);
         net.sendInput(aim.x, aim.y, input.boost);
+        if (input.boost && !prevBoost) sfx.boost();
+        prevBoost = input.boost;
       }
     }
     requestAnimationFrame(loop);
@@ -109,6 +118,13 @@
     const [, last] = net.latestTwo();
     if (!last) return;
     const me = last.snakes.find((s) => s.id === net.playerId);
+    if (me) {
+      if (lastMass && me.mass > lastMass + 0.5) {
+        const now = performance.now();
+        if (now - lastEatSound > 120) { sfx.eat(); lastEatSound = now; }
+      }
+      lastMass = me.mass;
+    }
     const score = document.getElementById('score');
     if (score && me) score.textContent = `Mass: ${Math.floor(me.mass)} | Length: ${me.segments.length}`;
 
@@ -126,6 +142,19 @@
         el.appendChild(massSpan);
         list.appendChild(el);
       });
+    }
+    if (last.events && last.events.length) {
+      const feed = document.getElementById('killFeed');
+      if (feed) {
+        for (const ev of last.events) {
+          if (ev.type !== 'kill') continue;
+          const line = document.createElement('div');
+          line.className = 'kill-line';
+          line.textContent = ev.by === 'wall' ? `${ev.name} hit the wall` : `${ev.name} was eaten by ${ev.by}`;
+          feed.appendChild(line);
+        }
+        while (feed.children.length > 5) feed.removeChild(feed.firstChild);
+      }
     }
   }
 
