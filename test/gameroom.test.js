@@ -58,3 +58,13 @@ test('a kill produces a kill event delivered once', () => {
   const snap2 = room.snapshot();
   assert.equal(snap2.events.filter((e) => e.type === 'kill').length, 0);
 });
+
+test('particle count stays bounded under heavy scatter + boost', () => {
+  const room = new GameRoom('ABCDE', { numBots: 6 });
+  const a = room.addPlayer('a', 'A', '#fff'); a.mass = 200;
+  for (let t = 0; t < 2000; t++) {
+    room.setInput('a', 2000, 2000, true);
+    room.step(1 / 30);
+  }
+  assert.ok(room.particles.length <= 1000, `particles ${room.particles.length} should stay <= MAX_PARTICLES`);
+});

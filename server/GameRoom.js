@@ -159,6 +159,11 @@ class GameRoom {
     if (this.particles.length < CONSTANTS.MAX_PARTICLES) {
       for (let i = 0; i < 10; i++) this._spawnParticle();
     }
+    // Hard cap total particles so death-scatter and boost trails can't grow the
+    // world (and each snapshot) without bound. Trims oldest excess.
+    if (this.particles.length > CONSTANTS.MAX_PARTICLES) {
+      this.particles.splice(0, this.particles.length - CONSTANTS.MAX_PARTICLES);
+    }
 
     this.emptyTicks = this.liveHumanCount() === 0 ? this.emptyTicks + 1 : 0;
     return { kills };
