@@ -94,6 +94,18 @@ class GameRoom {
         const inp = this.inputs.get(s.id);
         if (inp) { s.setAim(inp.aimX, inp.aimY); s.setBoost(inp.boost); }
       }
+      // Boost economy: draining mass, or deny boost when too small.
+      if (s.isBoosting) {
+        if (s.mass > CONSTANTS.BOOST_MIN_MASS) {
+          s.mass -= CONSTANTS.BOOST_DRAIN * dt;
+          if ((this.tick % 3) === 0) {
+            const tail = s.body[s.body.length - 1];
+            this.particles.push(new Particle(tail.x, tail.y));
+          }
+        } else {
+          s.setBoost(false);
+        }
+      }
       s.step(dt);
     }
 

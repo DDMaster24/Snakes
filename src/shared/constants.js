@@ -12,6 +12,8 @@
     MAX_PARTICLES: 1000,
     START_PARTICLES: 800,
     WALL_PADDING: 40,
+    BOOST_DRAIN: 22,
+    BOOST_MIN_MASS: 15,
   };
   const api = { CONSTANTS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
