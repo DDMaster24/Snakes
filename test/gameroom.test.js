@@ -38,3 +38,23 @@ test('snapshot leaderboard is sorted by mass desc, max 10', () => {
   assert.ok(lb.length <= 10);
   for (let i = 1; i < lb.length; i++) assert.ok(lb[i - 1].mass >= lb[i].mass);
 });
+
+test('snapshot exposes an events array', () => {
+  const room = new GameRoom('ABCDE', { numBots: 2 });
+  assert.ok(Array.isArray(room.snapshot().events));
+});
+
+test('a kill produces a kill event delivered once', () => {
+  const room = new GameRoom('ABCDE', { numBots: 0 });
+  const a = room.addPlayer('a', 'Big', '#fff'); a.mass = 300;
+  const b = room.addPlayer('b', 'Small', '#000'); b.mass = 50;
+  // Force them onto the same point so they collide head-to-head next step.
+  for (let i = 0; i < b.body.length; i++) { b.body[i].x = a.head.x; b.body[i].y = a.head.y; }
+  room.step(1 / 30);
+  const snap1 = room.snapshot();
+  const killEvents = snap1.events.filter((e) => e.type === 'kill');
+  assert.ok(killEvents.length >= 1, 'expected at least one kill event');
+  // delivered once: next snapshot (no new kills) has none
+  const snap2 = room.snapshot();
+  assert.equal(snap2.events.filter((e) => e.type === 'kill').length, 0);
+});

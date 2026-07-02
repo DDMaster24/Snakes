@@ -18,6 +18,7 @@ class GameRoom {
     this.inputs = new Map();  // id -> { aimX, aimY, boost }
     this.particles = [];
     this._botSeq = 0;
+    this._recentEvents = [];
 
     for (let i = 0; i < CONSTANTS.START_PARTICLES; i++) this._spawnParticle();
     for (let i = 0; i < numBots; i++) this._spawnBot(i);
@@ -123,6 +124,12 @@ class GameRoom {
     // Snake-vs-snake.
     kills.push(...resolveSnakeCollisions(all));
 
+    // Record kill events for the snapshot feed.
+    for (const k of kills) {
+      const dead = this.snakes.get(k.deadId);
+      this._recentEvents.push({ type: 'kill', name: dead ? dead.name : 'A snake', by: k.byName });
+    }
+
     // Scatter food from the dead, then handle bot respawn / player removal-on-death.
     for (const s of all) {
       if (!s.isDead) continue;
@@ -167,7 +174,9 @@ class GameRoom {
     }
     living.sort((a, b) => b.mass - a.mass);
     const leaderboard = living.slice(0, 10).map((s) => ({ name: s.name, mass: Math.floor(s.mass) }));
-    return { tick: this.tick, snakes, particles: this.particles.map((p) => p.toState()), leaderboard };
+    const snap = { tick: this.tick, snakes, particles: this.particles.map((p) => p.toState()), leaderboard, events: this._recentEvents };
+    this._recentEvents = [];
+    return snap;
   }
 }
 
