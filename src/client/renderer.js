@@ -6,6 +6,7 @@ class Renderer {
     this.followId = null;
     this.cam = { x: 0, y: 0 };
     this.zoom = 1;
+    this.camSmooth = 0.15;
     this._resize();
     window.addEventListener('resize', () => this._resize());
   }
@@ -15,7 +16,12 @@ class Renderer {
     this.canvas.height = window.innerHeight;
   }
 
-  setFollowId(id) { this.followId = id; }
+  setFollowId(id) {
+    this.followId = id;
+    // Reset the camera so render() snaps to the new head instead of sliding
+    // across the map on (re)spawn — the Renderer is reused across games.
+    this.cam = { x: 0, y: 0 };
+  }
 
   _lerp(a, b, t) { return a + (b - a) * t; }
 
@@ -50,9 +56,18 @@ class Renderer {
     // Camera follows our snake's head.
     const me = snakes.find((s) => s.id === this.followId) || snakes[0];
     if (me) {
+      // Zoom out gently as we grow so big snakes aren't claustrophobic.
+      const targetZoom = Math.max(0.55, Math.min(1, 14 / (me.radius || 10)));
+      this.zoom += (targetZoom - this.zoom) * 0.05;
       const head = me.segments[0];
-      this.cam.x = head.x - this.canvas.width / (2 * this.zoom);
-      this.cam.y = head.y - this.canvas.height / (2 * this.zoom);
+      const targetX = head.x - this.canvas.width / (2 * this.zoom);
+      const targetY = head.y - this.canvas.height / (2 * this.zoom);
+      if (this.cam.x === 0 && this.cam.y === 0) {
+        this.cam.x = targetX; this.cam.y = targetY;
+      } else {
+        this.cam.x += (targetX - this.cam.x) * this.camSmooth;
+        this.cam.y += (targetY - this.cam.y) * this.camSmooth;
+      }
     }
 
     const ctx = this.ctx;
@@ -65,6 +80,36 @@ class Renderer {
     this._drawBorders();
     const meBoost = me && me.boosting;
     if (meBoost) { ctx.fillStyle = 'rgba(255,255,0,0.3)'; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); }
+    this._drawMinimap(snakes, me);
+  }
+
+  _drawMinimap(snakes, me) {
+    const ctx = this.ctx;
+    const W = 4000;
+    const size = 160;
+    const margin = 16;
+    const x0 = this.canvas.width - size - margin;
+    const y0 = this.canvas.height - size - margin;
+    const scale = size / W;
+
+    // Panel
+    ctx.fillStyle = 'rgba(10, 10, 21, 0.6)';
+    ctx.fillRect(x0, y0, size, size);
+    ctx.strokeStyle = 'rgba(255, 68, 68, 0.6)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x0, y0, size, size);
+
+    // Snakes as dots
+    for (const s of snakes) {
+      const h = s.segments[0];
+      const mx = x0 + h.x * scale;
+      const my = y0 + h.y * scale;
+      const isMe = me && s.id === me.id;
+      ctx.fillStyle = isMe ? '#ffffff' : (s.color || '#888');
+      ctx.beginPath();
+      ctx.arc(mx, my, isMe ? 4 : 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   _drawGrid() {
@@ -100,13 +145,14 @@ class Renderer {
   _drawSnake(s) {
     const ctx = this.ctx;
     const radius = s.radius;
+    const glowMul = s.boosting ? 2.4 : 2;
     for (let i = s.segments.length - 1; i >= 0; i--) {
       const sp = this.worldToScreen(s.segments[i].x, s.segments[i].y);
       if (sp.x < -radius * 3 || sp.x > this.canvas.width + radius * 3 ||
           sp.y < -radius * 3 || sp.y > this.canvas.height + radius * 3) continue;
-      const g = ctx.createRadialGradient(sp.x, sp.y, radius * 0.5, sp.x, sp.y, radius * 2);
+      const g = ctx.createRadialGradient(sp.x, sp.y, radius * 0.5, sp.x, sp.y, radius * glowMul);
       g.addColorStop(0, s.color); g.addColorStop(1, 'transparent');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sp.x, sp.y, radius * 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sp.x, sp.y, radius * glowMul, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(sp.x, sp.y, radius, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.3)';
       ctx.beginPath(); ctx.arc(sp.x - radius * 0.3, sp.y - radius * 0.3, radius * 0.4, 0, Math.PI * 2); ctx.fill();
@@ -119,6 +165,12 @@ class Renderer {
       const ey = hs.y + Math.sin(s.angle + side * 0.5) * eyeDist;
       ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(ex, ey, eyeSize, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = 'black'; ctx.beginPath(); ctx.arc(ex, ey, eyeSize * 0.5, 0, Math.PI * 2); ctx.fill();
+    }
+    if (s.boosting) {
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.beginPath();
+      ctx.arc(hs.x, hs.y, radius * 1.2, 0, Math.PI * 2);
+      ctx.fill();
     }
     // Name tag for everyone (helps tell players apart)
     ctx.fillStyle = 'white'; ctx.font = '14px Arial'; ctx.textAlign = 'center';

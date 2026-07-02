@@ -35,3 +35,31 @@ test('flees a much bigger nearby snake', () => {
   // Threat is to +x, so bot should aim to -x (away)
   assert.ok(aim.x < 2000, `aim.x ${aim.x} should flee to -x`);
 });
+
+test('bot steers toward center when hugging a wall', () => {
+  const b = new Snake({ id: 'bot', x: 120, y: 2000, name: 'B', isBot: true });
+  b.skill = 1; b.aiChangeTargetTimer = 999;
+  const aim = computeAiAim(b, [], [b], 1 / 30);
+  // Wall avoidance returns the world centre deterministically; old ai.js had no such branch.
+  assert.equal(aim.x, 2000);
+  assert.equal(aim.y, 2000);
+});
+
+test('bot leads a moving prey (aims ahead of it)', () => {
+  const b = new Snake({ id: 'bot', x: 2000, y: 2000, name: 'B', isBot: true }); b.mass = 300; b.skill = 1;
+  b.aiChangeTargetTimer = 999;
+  const prey = new Snake({ id: 'prey', x: 2300, y: 2000, name: 'P', isBot: true }); prey.mass = 50;
+  prey.currentAngle = 0; // heading +x
+  const aim = computeAiAim(b, [], [b, prey], 1 / 30);
+  // New code leads ~+300 ahead (aim.x ~2600); old code aimed at prey.head.x = 2300 exactly.
+  assert.ok(aim.x >= 2500, `aim.x ${aim.x} should lead well ahead of prey at 2300`);
+});
+
+test('bot boosts when closing on nearby prey', () => {
+  const b = new Snake({ id: 'bot', x: 2000, y: 2000, name: 'B', isBot: true }); b.mass = 300; b.skill = 1;
+  b.aiChangeTargetTimer = 999;
+  const prey = new Snake({ id: 'prey', x: 2100, y: 2000, name: 'P', isBot: true }); prey.mass = 50;
+  prey.currentAngle = 0;
+  const aim = computeAiAim(b, [], [b, prey], 1 / 30);
+  assert.equal(aim.boost, true);
+});

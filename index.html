@@ -78,6 +78,26 @@
             font-weight: bold;
         }
 
+        #killFeed {
+            position: absolute;
+            top: 220px;
+            right: 20px;
+            width: 240px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            pointer-events: none;
+            z-index: 5;
+        }
+        #killFeed .kill-line {
+            background: rgba(0,0,0,0.45);
+            color: #ffb3b3;
+            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-align: right;
+        }
+
         #menu {
             position: absolute;
             top: 50%;
@@ -303,6 +323,8 @@
             <div id="leaderboardList"></div>
         </div>
 
+        <div id="killFeed"></div>
+
         <div id="menu">
             <h1>🐍 SNAKES IO</h1>
             <p class="subtitle">Eat. Grow. Dominate.</p>
@@ -364,6 +386,7 @@
     <script src="src/client/net.js"></script>
     <script src="src/client/renderer.js"></script>
     <script src="src/client/input.js"></script>
+    <script src="src/client/audio.js"></script>
     <script src="src/client/main.js"></script>
 </body>
 </html>
