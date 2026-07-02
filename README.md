@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/DDMaster24/snakes-io-game/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)](https://github.com/DDMaster24/snakes-io-game/releases)
 
-A modern, Snake.io-inspired game built with Electron and JavaScript. Control your snake with your mouse or keyboard, eat particles to grow massive, and compete against intelligent AI opponents!
+A modern, Snake.io-inspired game built with Electron and JavaScript. Play real-time multiplayer with friends on the same WiFi using room codes, or challenge AI opponents. Control your snake with your mouse or keyboard, eat particles to grow massive, and compete for the top spot!
 
 ![Game Screenshot - Coming Soon](https://via.placeholder.com/800x400/0f1419/00ff88?text=Snakes+IO+Game+Screenshot)
 
@@ -17,8 +17,8 @@ A modern, Snake.io-inspired game built with Electron and JavaScript. Control you
 
 *Installer size: ~71 MB*
 
-### 🌐 Play in Browser
-**[🎮 Play Online (Web Version)](https://snakes-io-game.vercel.app)** *(Deploy coming soon)*
+### 🌐 Play on Same WiFi
+**Real-time multiplayer with room codes** — Run locally via `npm run web`, create a lobby on the host, and invite friends on the same WiFi to join with a 5-letter code. AI bots fill the world alongside human players. See [QUICK_START.md](QUICK_START.md) for detailed setup.
 
 ---
 
@@ -29,8 +29,9 @@ A modern, Snake.io-inspired game built with Electron and JavaScript. Control you
 - **Keyboard Control**: Arrow keys or WASD for classic Snake gameplay
 - **Virtual Joystick**: Touch-friendly on-screen controls
 
-### 🤖 **Intelligent AI Opponents**
-- 6 AI snakes with varying difficulty levels
+### 🤖 **Multiplayer & AI Opponents**
+- Play real-time multiplayer with friends on the same WiFi using room codes
+- 6 AI snakes with varying difficulty levels fill the world alongside human players
 - Some start HUGE (300+ mass!) for immediate challenge
 - Smart pathfinding and self-preservation
 - AI avoids self-collision and hunts strategically
