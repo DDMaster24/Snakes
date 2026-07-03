@@ -9,9 +9,19 @@
   const joinCode = document.getElementById('joinCode');
   const lobbyMsg = document.getElementById('lobbyMsg');
   const lobbyBanner = document.getElementById('lobbyBanner');
+  const modeChoice = document.getElementById('modeChoice');
+  const mpPanel = document.getElementById('mpPanel');
+  const roomCodeHud = document.getElementById('roomCodeHud');
 
   let selectedControl = 'mouse';
   let selectedColor = '#00ff88';
+  let pendingMode = 'solo'; // 'solo' | 'mp' — how the next created game was started
+
+  // Menu visuals: ambient background + a live preview of the player's snake.
+  const bgFX = new BackgroundFX(document.getElementById('bgCanvas'));
+  const preview = new SnakePreview(document.getElementById('previewCanvas'));
+  bgFX.start();
+  preview.start();
 
   // Control + color pickers (reuse existing buttons if present)
   document.querySelectorAll('.color-option').forEach((opt) => {
@@ -19,6 +29,7 @@
       document.querySelectorAll('.color-option').forEach((o) => o.classList.remove('selected'));
       opt.classList.add('selected');
       selectedColor = opt.getAttribute('data-color');
+      preview.setColor(selectedColor); // reflect the choice in the live preview
     });
   });
   const ctrlMap = { mouseBtn: 'mouse', arrowsBtn: 'arrows', joystickBtn: 'joystick' };
@@ -47,13 +58,24 @@
 
   function playerName() { return (nameInput && nameInput.value.trim()) || 'Player'; }
 
+  function showRoomCode(code) {
+    if (!roomCodeHud) return;
+    roomCodeHud.innerHTML = 'LOBBY';
+    const el = document.createElement('span');
+    el.className = 'code';
+    el.textContent = code;
+    roomCodeHud.appendChild(el);
+    roomCodeHud.classList.remove('hidden');
+  }
+  function hideRoomCode() { if (roomCodeHud) roomCodeHud.classList.add('hidden'); }
+
   net.onError = (m) => { lobbyMsg.textContent = m.message || 'Error'; };
   net.onCreated = (m) => {
-    lobbyBanner.style.display = 'block';
-    lobbyBanner.textContent = `Lobby code: ${m.code} — share it!`;
+    // Multiplayer host: keep the code visible in-game so they can share it.
+    if (pendingMode === 'mp') showRoomCode(m.code); else hideRoomCode();
     startGame(m.playerId);
   };
-  net.onJoined = (m) => { startGame(m.playerId); };
+  net.onJoined = (m) => { showRoomCode(m.code); startGame(m.playerId); };
   net.onState = () => { lastSnapAt = performance.now(); updateHUD(); };
   net.onDead = (m) => { sfx.death(); showGameOver(m.by); };
 
@@ -63,13 +85,35 @@
     catch { lobbyMsg.textContent = 'Could not reach server'; throw new Error('no-conn'); }
   }
 
+  // Single Player: create a private game (bots fill it) and drop straight in.
+  document.getElementById('singlePlayerBtn').addEventListener('click', async () => {
+    lobbyMsg.textContent = '';
+    pendingMode = 'solo';
+    sfx.resume();
+    try { await ensureConnected(); net.create(playerName(), selectedColor); } catch {}
+  });
+
+  // Multiplayer: reveal the create/join panel.
+  document.getElementById('multiplayerBtn').addEventListener('click', () => {
+    lobbyMsg.textContent = '';
+    modeChoice.classList.add('hidden');
+    mpPanel.classList.remove('hidden');
+  });
+  document.getElementById('mpBackBtn').addEventListener('click', () => {
+    lobbyMsg.textContent = '';
+    mpPanel.classList.add('hidden');
+    modeChoice.classList.remove('hidden');
+  });
+
   document.getElementById('createLobbyBtn').addEventListener('click', async () => {
     lobbyMsg.textContent = '';
+    pendingMode = 'mp';
     sfx.resume();
     try { await ensureConnected(); net.create(playerName(), selectedColor); } catch {}
   });
   document.getElementById('joinLobbyBtn').addEventListener('click', async () => {
     lobbyMsg.textContent = '';
+    pendingMode = 'mp';
     sfx.resume();
     const code = joinCode.value.trim().toUpperCase();
     if (code.length !== 5) { lobbyMsg.textContent = 'Enter a 5-letter code'; return; }
@@ -81,6 +125,8 @@
     if (instructions) instructions.classList.add('hidden');
     if (gameOver) gameOver.style.display = 'none';
     canvas.classList.add('playing');
+    // Pause the menu visuals while playing to free the CPU.
+    bgFX.stop(); preview.stop();
     lastMass = 0; prevBoost = false;
 
     // Guard: create Renderer and InputController only once to prevent listener leaks.
@@ -191,6 +237,14 @@
     running = false; net.leave();
     if (gameOver) gameOver.style.display = 'none';
     if (pauseMenu) pauseMenu.style.display = 'none';
+    canvas.classList.remove('playing');
+    hideRoomCode();
+    // Reset the home screen to its default state and resume the visuals.
+    mpPanel.classList.add('hidden');
+    modeChoice.classList.remove('hidden');
+    if (lobbyBanner) lobbyBanner.classList.add('hidden');
+    lobbyMsg.textContent = '';
     menu.classList.remove('hidden');
+    bgFX.start(); preview.start();
   });
 })();
